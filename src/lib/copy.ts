@@ -2,6 +2,9 @@
 export const NAME = 'Omar Ahallal';
 export const BRAND = 'pénte';
 export const EMAIL = 'hello@pente.ma';
+// From his 2022 site's footer: WhatsApp in international digits (wa.me), Instagram without the @.
+export const WHATSAPP = '212657710619';
+export const INSTAGRAM = 'omar_ahallal1';
 export const STATEMENT = 'Photographer & videographer in Morocco. Portraits, weddings, brands and nights, shot in natural light and kept honest.';
 
 export const NOTES: Record<string, string> = {

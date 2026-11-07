@@ -7,6 +7,7 @@
 	import { asset } from '$app/paths';
 	import Loader from '#lib/components/Loader.svelte';
 	import Nav from '#lib/components/Nav.svelte';
+	import SiteFooter from '#lib/components/SiteFooter.svelte';
 	import { BRAND, NAME, STATEMENT } from '#lib/copy.js';
 	import type { LayoutProps } from './$types';
 
@@ -23,6 +24,7 @@
 <a class="skip" href="#main">Skip to the work</a>
 <Nav />
 <main id="main">{@render children()}</main>
+<SiteFooter />
 
 <style>
 	:global(:root) {
