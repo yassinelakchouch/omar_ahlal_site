@@ -29,13 +29,16 @@
 	<meta name="description" content="{c.title}: {frames(c)}. {STATEMENT}" />
 </svelte:head>
 
-{#if c.layout === 'strip'}
-	<FilmStripChapter chapter={c} {count} onopen={open} />
-{:else if c.layout === 'polaroid'}
-	<PolaroidWall chapter={c} {count} onopen={open} />
-{:else}
-	<FramedCollage chapter={c} {count} onopen={open} />
-{/if}
+<!-- One layout per chapter: Next keeps this page, and a reused layout never set up the next chapter's photos (they stayed hidden). -->
+{#key c.slug}
+	{#if c.layout === 'strip'}
+		<FilmStripChapter chapter={c} {count} onopen={open} />
+	{:else if c.layout === 'polaroid'}
+		<PolaroidWall chapter={c} {count} onopen={open} />
+	{:else}
+		<FramedCollage chapter={c} {count} onopen={open} />
+	{/if}
+{/key}
 
 <nav class="next" aria-label="Next chapter">
 	<a href={resolve('/chapters/[slug]', { slug: data.next.slug })}><span class="mono">Next · {data.next.n}</span><span class="title">{data.next.title} <Arrow glyph="→" /></span></a>
