@@ -12,7 +12,7 @@
 	let shown = $state(-1);
 	let list = $state<HTMLOListElement>();
 	let float = $state<HTMLElement>();
-	let follow: ((y: number) => void) | null = null;
+	let follow: ((y: number, start?: number) => unknown) | null = null;
 	let lastY = 0;
 
 	onMount(() => {
@@ -29,19 +29,19 @@
 		const l = list!.getBoundingClientRect();
 		const y = r.top - l.top + r.height / 2;
 		void kit().then(({ gsap }) => {
-			if (!float) return;
-			const lean = Math.max(-4, Math.min(4, (y - lastY) / 12));
-			gsap.to(float, { opacity: 1, scale: 1, duration: 0.25, ease: 'power2.out' });
-			gsap.to(float, { rotation: -3 + lean, duration: 0.25, ease: 'power2.out', onComplete: () => void gsap.to(float!, { rotation: -3, duration: 0.5, ease: 'power3.out' }) });
-			if (follow && lastY) follow(y);
-			else gsap.set(float, { y });
+			if (!float || !follow) return;
+			// A hidden photo appears at the row; a visible one glides there. Measured, not remembered: a quick return used to jump.
+			const gliding = Number(gsap.getProperty(float, 'opacity')) > 0;
+			const lean = gliding ? Math.max(-4, Math.min(4, (y - lastY) / 12)) : 0;
+			follow(y, gliding ? undefined : y);
+			gsap.to(float, { opacity: 1, scale: 1, duration: 0.25, ease: 'power2.out', overwrite: 'auto' });
+			gsap.to(float, { keyframes: [{ rotation: -3 + lean, duration: 0.25, ease: 'power2.out' }, { rotation: -3, duration: 0.5, ease: 'power3.out' }], overwrite: 'auto' });
 			lastY = y;
 		});
 	}
 	function leave() {
 		active = -1;
-		lastY = 0;
-		void kit().then(({ gsap }) => float && gsap.to(float, { opacity: 0, scale: 0.92, duration: 0.25, ease: 'power2.out' }));
+		void kit().then(({ gsap }) => float && gsap.to(float, { opacity: 0, scale: 0.92, duration: 0.25, ease: 'power2.out', overwrite: 'auto' }));
 	}
 </script>
 
@@ -64,7 +64,7 @@
 		</li>
 	{/each}
 	<li class="float" bind:this={float} aria-hidden="true">
-		{#if shown >= 0}{#key shown}<Photo photo={coverOf(chapters[shown])} sizes="220px" />{/key}{/if}
+		{#each chapters as c, i (c.slug)}<span class="shot" class:shown={i === shown}><Photo photo={coverOf(c)} sizes="220px" /></span>{/each}
 	</li>
 </ol>
 
@@ -122,9 +122,17 @@
 		aspect-ratio: 2 / 3;
 		margin-top: -165px;
 		opacity: 0;
-		rotate: 0deg;
 		box-shadow: 0 20px 40px rgba(17, 17, 17, 0.28);
 		pointer-events: none;
+	}
+	/* Every cover stays mounted and loaded: rebuilding the image per row showed its grey tone first. */
+	.shot {
+		position: absolute;
+		inset: 0;
+		visibility: hidden;
+	}
+	.shot.shown {
+		visibility: visible;
 	}
 	/* Phone: no hover to float a photo, so each row carries a small one. */
 	@media (max-width: 760px) {
