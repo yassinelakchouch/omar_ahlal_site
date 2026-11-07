@@ -1,29 +1,35 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { page } from '$app/state';
+	import { asset } from '$app/paths';
 	import { kit } from '#lib/motion.js';
-	import { coverOf } from '#lib/site.js';
 
-	const covers = page.data.site.chapters.filter((c) => c.photos.length).map(coverOf);
-	let veil = $state<HTMLElement>();
-	let strip = $state<HTMLElement>();
+	let top = $state<HTMLElement>();
+	let bottom = $state<HTMLElement>();
+	let mark = $state<HTMLElement>();
+	let count = $state<HTMLElement>();
 
-	// A1 (O-15, the loader picked on O-06): every full load, marked by app.html before the first paint; never on a move inside
-	// the site. It also loads GSAP for the page. Frames run up the strip, then it leaves; without GSAP, a CSS safety hides it at 3 s.
+	// A1 (O-15, revised 7 Nov: the owner dropped the film strip): every full load opens on the darkroom ink with his mark and a
+	// counter, then the ink parts like a shutter onto the page. It also loads GSAP; without it, a CSS safety hides it at 3 s.
 	onMount(() => {
 		const html = document.documentElement;
 		if (!html.classList.contains('first')) return;
 		void kit().then(({ gsap }) => {
+			const n = { v: 0 };
 			gsap.timeline({ onComplete: () => html.classList.remove('first') })
-				.to(strip!, { yPercent: -50, duration: 1.0, ease: 'power2.inOut' })
-				.to(veil!, { yPercent: -100, duration: 0.5, ease: 'power3.inOut' }, '-=0.15');
+				.to(n, { v: 100, duration: 0.8, ease: 'power2.inOut', onUpdate: () => count && (count.textContent = String(Math.round(n.v)).padStart(3, '0')) })
+				.to(mark!, { autoAlpha: 0, duration: 0.15 })
+				.to(top!, { yPercent: -100, duration: 0.55, ease: 'power3.inOut' }, '<')
+				.to(bottom!, { yPercent: 100, duration: 0.55, ease: 'power3.inOut' }, '<');
 		});
 	});
 </script>
 
-<div class="veil" bind:this={veil} aria-hidden="true">
-	<div class="strip" bind:this={strip}>
-		{#each [...covers, ...covers] as p, i (i)}<span class="frame"><img src={p.small} alt="" width="100" height="125" /></span>{/each}
+<div class="veil" aria-hidden="true">
+	<div class="half top" bind:this={top}></div>
+	<div class="half bottom" bind:this={bottom}></div>
+	<div class="mark" bind:this={mark}>
+		<img src={asset('brand/favicon.svg')} alt="" width="56" height="56" />
+		<span class="count" bind:this={count}>000</span>
 	</div>
 </div>
 
@@ -36,9 +42,7 @@
 		inset: 0;
 		z-index: 20;
 		display: grid;
-		justify-items: center;
-		background: var(--paper);
-		overflow: hidden;
+		place-items: center;
 		animation: away 0s 3s forwards;
 	}
 	@keyframes away {
@@ -46,27 +50,29 @@
 			visibility: hidden;
 		}
 	}
-	.strip {
-		--holes: repeating-linear-gradient(to bottom, var(--paper) 0 8px, transparent 8px 19px);
-		width: 150px;
-		padding: 12vh 24px 0;
+	.half {
+		position: absolute;
+		left: 0;
+		right: 0;
+		height: 50.5%;
+		background: var(--ink);
+	}
+	.top {
+		top: 0;
+	}
+	.bottom {
+		bottom: 0;
+	}
+	.mark {
+		position: relative;
 		display: grid;
-		gap: 10px;
-		align-content: start;
-		background:
-			var(--holes) left 7px top 0 / 8px 100% no-repeat,
-			var(--holes) right 7px top 0 / 8px 100% no-repeat,
-			#111;
+		justify-items: center;
+		gap: 14px;
 	}
-	.frame {
-		aspect-ratio: 4 / 5;
-		overflow: hidden;
-		background: #1c1c1c;
-	}
-	img {
-		display: block;
-		width: 100%;
-		height: 100%;
-		object-fit: cover;
+	.count {
+		font-family: var(--mono);
+		font-size: 12px;
+		letter-spacing: 0.12em;
+		color: #a9a9a9;
 	}
 </style>
