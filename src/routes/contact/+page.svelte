@@ -100,6 +100,7 @@
 	}
 	input,
 	textarea {
+		--autofill: var(--paper);
 		padding: 6px 0 8px;
 		border: 0;
 		border-bottom: 1.5px solid var(--ink);
@@ -108,7 +109,10 @@
 		font: inherit;
 		font-size: 20px;
 		color: var(--ink);
-		resize: vertical;
+		resize: none;
+		field-sizing: content;
+		min-height: 2lh;
+		--autofill: var(--paper);
 	}
 	input:focus,
 	textarea:focus {

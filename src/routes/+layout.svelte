@@ -58,6 +58,33 @@
 		font-size: 13px;
 		cursor: pointer;
 	}
+	/* Nothing the browser draws by default: thin stone scrollbars, ink selection, no autofill fill. */
+	:global(*) {
+		scrollbar-width: thin;
+		scrollbar-color: var(--stone) transparent;
+	}
+	:global(::-webkit-scrollbar) {
+		width: 8px;
+		height: 8px;
+	}
+	:global(::-webkit-scrollbar-thumb) {
+		border-radius: 8px;
+		background: var(--stone);
+	}
+	:global(::-webkit-scrollbar-track) {
+		background: transparent;
+	}
+	:global(::selection) {
+		background: var(--ink);
+		color: var(--paper);
+	}
+	:global(input:-webkit-autofill),
+	:global(input:-webkit-autofill:hover),
+	:global(input:-webkit-autofill:focus) {
+		-webkit-box-shadow: 0 0 0 1000px var(--autofill, #fff) inset;
+		-webkit-text-fill-color: var(--ink);
+		caret-color: var(--ink);
+	}
 	:global(.mono) {
 		font-family: var(--mono);
 		font-size: 12px;
