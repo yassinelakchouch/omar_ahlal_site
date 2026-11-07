@@ -6,8 +6,8 @@ let loading: Promise<Kit> | null = null;
 // GSAP loads after the first paint, only in the browser. A chunk that never arrives shows the page still.
 export function kit(): Promise<Kit> {
 	if (!loading) {
-		loading = Promise.all([import('gsap'), import('gsap/ScrollTrigger'), import('gsap/Flip')]).then(([{ gsap }, { ScrollTrigger }, { Flip }]) => {
-			gsap.registerPlugin(ScrollTrigger, Flip);
+		loading = Promise.all([import('gsap'), import('gsap/ScrollTrigger'), import('gsap/Flip'), import('gsap/ScrollToPlugin')]).then(([{ gsap }, { ScrollTrigger }, { Flip }, { ScrollToPlugin }]) => {
+			gsap.registerPlugin(ScrollTrigger, Flip, ScrollToPlugin);
 			(window as unknown as { __motionReady: boolean }).__motionReady = true;
 			return { gsap, ScrollTrigger, Flip };
 		});
