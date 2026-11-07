@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
+	import Arrow from '#lib/components/Arrow.svelte';
 	import FilmStripChapter from '#lib/components/FilmStripChapter.svelte';
 	import FramedCollage from '#lib/components/FramedCollage.svelte';
 	import ImageViewer from '#lib/components/ImageViewer.svelte';
@@ -37,7 +38,7 @@
 {/if}
 
 <nav class="next" aria-label="Next chapter">
-	<a href={resolve('/chapters/[slug]', { slug: data.next.slug })}><span class="mono">Next · {data.next.n}</span><span class="title">{data.next.title} →</span></a>
+	<a href={resolve('/chapters/[slug]', { slug: data.next.slug })}><span class="mono">Next · {data.next.n}</span><span class="title">{data.next.title} <Arrow glyph="→" /></span></a>
 </nav>
 
 <PhoneBar meta={frames(c)} label="Next · {data.next.title} →" href={resolve('/chapters/[slug]', { slug: data.next.slug })} />

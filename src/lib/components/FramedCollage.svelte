@@ -1,5 +1,7 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import Photo from './Photo.svelte';
+	import { kit } from '#lib/motion.svelte.js';
 	import type { Chapter } from '#lib/site.js';
 
 	type Props = { chapter: Chapter; count: string; onopen: (index: number, from: DOMRect) => void };
@@ -14,9 +16,24 @@
 		[980, 330, 210, 300]
 	];
 	const pct = (v: number, of: number) => `${((v / of) * 100).toFixed(3)}%`;
+	let section = $state<HTMLElement>();
+
+	// W2 (O-15): the frame draws, then his photos are placed by hand, one by one as they come into view.
+	onMount(() => {
+		let batch: { kill: () => void }[] = [];
+		void kit().then(({ gsap, ScrollTrigger }) => {
+			gsap.to(section!.querySelector('.frame'), { clipPath: 'inset(0% 0% 0% 0%)', duration: 0.3, ease: 'power2.out' });
+			batch = ScrollTrigger.batch(section!.querySelectorAll('li'), {
+				onEnter: (els) => void gsap.fromTo(els, { y: -40, rotation: () => gsap.utils.random(-8, 8) }, { y: 0, rotation: 0, opacity: 1, duration: 0.6, ease: 'back.out(1.4)', stagger: 0.07, delay: 0.2 }),
+				once: true,
+				start: 'top 92%'
+			});
+		});
+		return () => batch.forEach((t) => t.kill());
+	});
 </script>
 
-<section class="collage" aria-labelledby="chapter-title">
+<section class="collage" aria-labelledby="chapter-title" bind:this={section}>
 	<div class="frame" aria-hidden="true"></div>
 	<ul>
 		{#each chapter.photos.slice(0, 6) as p, i (p.id)}
@@ -35,6 +52,12 @@
 		position: relative;
 		height: calc(100dvh - 88px);
 		min-height: 560px;
+	}
+	:global(html[data-motion='on']) .frame {
+		clip-path: inset(0% 100% 100% 0%);
+	}
+	:global(html[data-motion='on']) li {
+		opacity: 0;
 	}
 	.frame {
 		position: absolute;
