@@ -3,7 +3,7 @@
 	import IndexRow from './IndexRow.svelte';
 	import Roll from './Roll.svelte';
 	import { BRAND, EMAIL, INSTAGRAM, NAME, WHATSAPP } from '#lib/copy.js';
-	import { finePointer } from '#lib/motion.js';
+	import { finePointer, kit } from '#lib/motion.js';
 
 	// O-16 B, the darkroom sign-off: every page ends on the channels Omar answers, on its own ground so it never reads as more chapters.
 	const year = new Date().getFullYear();
@@ -15,9 +15,15 @@
 	];
 	let up = $state(false);
 
+	// The owner's glide (his Lenis settings): 0.8 to 1.6 s by distance, sine.out. GSAP drives it, because Chrome turns
+	// behavior: 'smooth' into a jump when Windows animation effects are off; the wheel takes over mid-glide (autoKill).
 	function top() {
-		scrollTo({ top: 0, behavior: 'smooth' });
 		document.querySelector<HTMLElement>('header .mark')?.focus({ preventScroll: true });
+		const duration = Math.min(1.6, Math.max(0.8, scrollY / 2200));
+		kit().then(
+			({ gsap }) => gsap.to(window, { scrollTo: { y: 0, autoKill: true }, duration, ease: 'sine.out', overwrite: true }),
+			() => scrollTo(0, 0)
+		);
 	}
 </script>
 
