@@ -5,6 +5,7 @@
 	import '@fontsource/ibm-plex-mono/400.css';
 	import '@fontsource/ibm-plex-mono/500.css';
 	import { asset } from '$app/paths';
+	import Loader from '#lib/components/Loader.svelte';
 	import Nav from '#lib/components/Nav.svelte';
 	import { BRAND, NAME, STATEMENT } from '#lib/copy.js';
 	import type { LayoutProps } from './$types';
@@ -18,6 +19,7 @@
 	<meta property="og:site_name" content="{BRAND} · {NAME}" />
 </svelte:head>
 
+<Loader />
 <a class="skip" href="#main">Skip to the work</a>
 <Nav />
 <main id="main">{@render children()}</main>
@@ -42,6 +44,13 @@
 		color: var(--ink);
 		font: 16px/1.5 var(--sans);
 		-webkit-font-smoothing: antialiased;
+	}
+	/* Motion off (the stored switch): every CSS transition and animation is cut; GSAP ends its tweens at once. */
+	:global(html[data-motion='off'] *),
+	:global(html[data-motion='off'] *::before),
+	:global(html[data-motion='off'] *::after) {
+		transition: none !important;
+		animation: none !important;
 	}
 	:global(:focus-visible) {
 		outline: 2px solid var(--ember);

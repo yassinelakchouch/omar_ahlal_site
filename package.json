@@ -27,6 +27,7 @@
 		"@fontsource-variable/archivo": "^5.3.0",
 		"@fontsource/bodoni-moda": "^5.3.0",
 		"@fontsource/ibm-plex-mono": "^5.3.0",
-		"@fontsource/oswald": "^5.3.0"
+		"@fontsource/oswald": "^5.3.0",
+		"gsap": "^3.15.1"
 	}
 }
