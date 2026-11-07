@@ -4,7 +4,6 @@
 	import '@fontsource/oswald/600.css';
 	import '@fontsource/ibm-plex-mono/400.css';
 	import '@fontsource/ibm-plex-mono/500.css';
-	import { asset } from '$app/paths';
 	import Loader from '#lib/components/Loader.svelte';
 	import Nav from '#lib/components/Nav.svelte';
 	import SiteFooter from '#lib/components/SiteFooter.svelte';
@@ -15,7 +14,6 @@
 </script>
 
 <svelte:head>
-	<link rel="icon" href={asset('brand/pente-mark.svg')} />
 	<meta name="description" content={STATEMENT} />
 	<meta property="og:site_name" content="{BRAND} · {NAME}" />
 </svelte:head>
