@@ -3,6 +3,8 @@
 
 	type Props = { photo: Photo; sizes?: string; eager?: boolean; gray?: boolean; fit?: 'cover' | 'contain' };
 	let { photo, sizes = '100vw', eager = false, gray, fit = 'cover' }: Props = $props();
+	// A file that fails (a page cached across a Publish that removed it) leaves its tone, never the browser's broken-image icon.
+	let failed = $state(false);
 </script>
 
 <!-- The tone colour shows until the photo paints, with no script: the prerendered page never waits on JavaScript to reveal it. -->
@@ -18,6 +20,8 @@
 		fetchpriority={eager ? 'high' : 'auto'}
 		decoding="async"
 		class:gray={gray ?? photo.gray}
+		class:failed
+		onerror={() => (failed = true)}
 		style:object-fit={fit}
 	/>
 </span>
@@ -36,5 +40,9 @@
 	}
 	.gray {
 		filter: grayscale(1);
+	}
+	/* opacity, not visibility: the alt text stays for screen readers. */
+	.failed {
+		opacity: 0;
 	}
 </style>
