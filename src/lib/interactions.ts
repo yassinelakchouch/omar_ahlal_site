@@ -24,7 +24,7 @@ export function magnet(node: HTMLElement) {
 }
 
 // N2 · Arrows travel: the arrow leaves along its own direction and a copy comes in behind it. The label never moves.
-const DIR = { '↗': [1, -1], '→': [1, 0], '↓': [0, 1], '←': [-1, 0] } as const;
+const DIR = { '↗': [1, -1], '→': [1, 0], '↓': [0, 1], '←': [-1, 0], '↑': [0, -1] } as const;
 export function travel(node: HTMLElement) {
 	const control = node.closest<HTMLElement>('a, button');
 	const [a, b] = [...node.children] as HTMLElement[];

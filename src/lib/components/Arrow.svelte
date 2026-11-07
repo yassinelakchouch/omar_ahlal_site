@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { travel } from '#lib/interactions.js';
 
-	let { glyph }: { glyph: '↗' | '→' | '↓' | '←' } = $props();
+	let { glyph }: { glyph: '↗' | '→' | '↓' | '←' | '↑' } = $props();
 </script>
 
 <!-- Decorative: the link's words carry the meaning; the second copy is the one that travels in. -->
