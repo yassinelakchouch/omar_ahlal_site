@@ -2,6 +2,8 @@
 
 Omar Ahallal's site: a photographer and videographer in Morocco. Seven chapters of his work, his services, About, and a contact form.
 
+**Live:** https://omar-ahlal.vercel.app (Vercel; pages re-read the database every 60 s, so a Publish in the admin shows within a minute)
+
 Designed on boards O-04 to O-07 and O-12. The admin that feeds it is a separate private repository.
 
 ## Run
