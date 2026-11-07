@@ -1,5 +1,7 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import Photo from './Photo.svelte';
+	import { SETTLE, kit } from '#lib/motion.svelte.js';
 	import type { Chapter } from '#lib/site.js';
 
 	type Props = { chapter: Chapter; count: string; onopen: (index: number, from: DOMRect) => void };
@@ -13,9 +15,30 @@
 	];
 	const MIRROR = WALL.map(([x, y, w, h, r]) => [1440 - x - w, y, w, h, -r]);
 	const slot = (i: number) => (i < 4 ? WALL[i] : MIRROR[i - 4]);
+	let section = $state<HTMLElement>();
+	const tilt = (el: Element) => parseFloat((el as HTMLElement).style.getPropertyValue('--r')) || 0;
+
+	// W3 (O-15): each polaroid lands as it comes into view, then its pin goes in.
+	onMount(() => {
+		let batch: { kill: () => void }[] = [];
+		void kit().then(({ gsap, ScrollTrigger }) => {
+			batch = ScrollTrigger.batch(section!.querySelectorAll('li'), {
+				onEnter: (els) =>
+					void els.forEach((el, i) =>
+						gsap.timeline({ delay: i * 0.09 })
+							// Lands on its own hand-placed tilt (GSAP folds the CSS rotate into its transform, so the tilt is the end value).
+							.fromTo(el, { y: -50, rotation: tilt(el) - 8 }, { y: 0, rotation: tilt(el), opacity: 1, ...SETTLE, duration: 0.55 })
+							.fromTo(el.querySelector('.pin'), { scale: 0 }, { scale: 1, duration: 0.25, ease: 'back.out(3)' }, '-=0.1')
+					),
+				once: true,
+				start: 'top 92%'
+			});
+		});
+		return () => batch.forEach((t) => t.kill());
+	});
 </script>
 
-<section class="wall" aria-labelledby="chapter-title">
+<section class="wall" aria-labelledby="chapter-title" bind:this={section}>
 	<div class="note">
 		<span class="bar" aria-hidden="true"></span>
 		<p class="hello">Congratulations</p>
@@ -78,15 +101,14 @@
 		top: var(--y);
 		width: var(--w);
 		rotate: var(--r);
-		animation: drop 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both;
-		animation-delay: calc(var(--i) * 90ms);
 	}
-	@keyframes drop {
-		from {
-			opacity: 0;
-			translate: 0 -24px;
-		}
+	:global(html[data-motion='on']) li {
+		opacity: 0;
 	}
+	:global(html[data-motion='on']) .pin {
+		transform: scale(0);
+	}
+
 	.polaroid {
 		position: relative;
 		display: block;
@@ -131,11 +153,6 @@
 		right: 48px;
 		top: 22px;
 		margin: 0;
-	}
-	@media (prefers-reduced-motion: reduce) {
-		li {
-			animation: none;
-		}
 	}
 	/* Phone: the note, then the polaroids one under another, still turned. */
 	@media (max-width: 760px) {

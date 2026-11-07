@@ -1,47 +1,71 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import Photo from './Photo.svelte';
+	import Roll from './Roll.svelte';
+	import { finePointer, kit } from '#lib/motion.svelte.js';
 	import { coverOf, frames } from '#lib/site.js';
 
 	const chapters = $derived(page.data.site.chapters.filter((c) => c.photos.length));
-
 	let active = $state(-1);
-	let top = $state(0);
+	let shown = $state(-1);
 	let list = $state<HTMLOListElement>();
+	let float = $state<HTMLElement>();
+	let follow: ((y: number) => void) | null = null;
+	let lastY = 0;
 
-	// The pointed row's photo floats beside it, centred on the row.
+	onMount(() => {
+		void kit().then(({ gsap }) => {
+			if (float) follow = gsap.quickTo(float, 'y', { duration: 0.45, ease: 'power3.out' });
+		});
+	});
+
+	// W1 (O-15): the pointed row's photo glides to it with weight and leans the way it travels, clamped to ±4°.
 	function point(i: number, row: HTMLElement) {
 		active = i;
+		shown = i;
 		const r = row.getBoundingClientRect();
 		const l = list!.getBoundingClientRect();
-		top = r.top - l.top + r.height / 2;
+		const y = r.top - l.top + r.height / 2;
+		void kit().then(({ gsap }) => {
+			if (!float) return;
+			const lean = Math.max(-4, Math.min(4, (y - lastY) / 12));
+			gsap.to(float, { opacity: 1, scale: 1, duration: 0.25, ease: 'power2.out' });
+			gsap.to(float, { rotation: -3 + lean, duration: 0.25, ease: 'power2.out', onComplete: () => void gsap.to(float!, { rotation: -3, duration: 0.5, ease: 'power3.out' }) });
+			if (follow && lastY) follow(y);
+			else gsap.set(float, { y });
+			lastY = y;
+		});
+	}
+	function leave() {
+		active = -1;
+		lastY = 0;
+		void kit().then(({ gsap }) => float && gsap.to(float, { opacity: 0, scale: 0.92, duration: 0.25, ease: 'power2.out' }));
 	}
 </script>
 
-<ol bind:this={list} class="index" onpointerleave={() => (active = -1)}>
+<ol bind:this={list} class="index" onpointerleave={leave}>
 	{#each chapters as c, i (c.slug)}
 		<li>
 			<a
 				class="row"
 				class:on={i === active}
 				href={resolve('/chapters/[slug]', { slug: c.slug })}
-				onpointerenter={(e) => point(i, e.currentTarget)}
+				onpointerenter={(e) => finePointer() && point(i, e.currentTarget)}
 				onfocus={(e) => point(i, e.currentTarget)}
-				onblur={() => (active = -1)}
+				onblur={leave}
 			>
 				<span class="n">{c.n}</span>
-				<span class="title">{c.title}</span>
+				<span class="title"><Roll text={c.title} on={i === active} /></span>
 				<span class="note">{frames(c)}</span>
 				<span class="thumb" aria-hidden="true"><Photo photo={coverOf(c)} sizes="44px" /></span>
 			</a>
 		</li>
 	{/each}
-	{#if active >= 0}
-		<li class="float" aria-hidden="true" style:top="{top}px">
-			{#key active}<Photo photo={coverOf(chapters[active])} sizes="220px" />{/key}
-		</li>
-	{/if}
+	<li class="float" bind:this={float} aria-hidden="true">
+		{#if shown >= 0}{#key shown}<Photo photo={coverOf(chapters[shown])} sizes="220px" />{/key}{/if}
+	</li>
 </ol>
 
 <style>
@@ -59,6 +83,7 @@
 		border-top: 1px solid var(--ink);
 		color: var(--ink);
 		text-decoration: none;
+		transition: color 0.2s;
 	}
 	.n,
 	.note {
@@ -92,18 +117,14 @@
 	.float {
 		position: absolute;
 		left: 57%;
+		top: 0;
 		width: 220px;
 		aspect-ratio: 2 / 3;
-		translate: 0 -50%;
-		rotate: -3deg;
+		margin-top: -165px;
+		opacity: 0;
+		rotate: 0deg;
 		box-shadow: 0 20px 40px rgba(17, 17, 17, 0.28);
 		pointer-events: none;
-		transition: top 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
-	}
-	@media (prefers-reduced-motion: reduce) {
-		.float {
-			transition: none;
-		}
 	}
 	/* Phone: no hover to float a photo, so each row carries a small one. */
 	@media (max-width: 760px) {

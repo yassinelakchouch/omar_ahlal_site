@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import Photo from './Photo.svelte';
+	import { kit, motion } from '#lib/motion.svelte.js';
 	import type { Chapter } from '#lib/site.js';
 
 	type Props = { chapter: Chapter; count: string; onopen: (index: number, from: DOMRect) => void };
@@ -8,21 +9,21 @@
 	const [hero, ...rest] = $derived(chapter.photos);
 	let section = $state<HTMLElement>();
 	let strip = $state<HTMLElement>();
-	let shift = $state(0);
+	let frames = $state<HTMLElement>();
 
-	// O-05 04: scrolling moves the strip frame by frame; with animations off it stays, and scrolls on its own.
+	// W4 (O-15): scrolling moves the strip frame by frame (ScrollTrigger scrub); with motion off it stays, and scrolls on its own.
 	onMount(() => {
-		if (matchMedia('(prefers-reduced-motion: reduce)').matches || matchMedia('(max-width: 760px)').matches) return;
-		const move = () => {
-			const r = section!.getBoundingClientRect();
-			const travel = r.height - innerHeight;
-			const p = travel > 0 ? Math.min(1, Math.max(0, -r.top / travel)) : 0;
-			shift = -p * Math.max(0, strip!.scrollHeight - strip!.clientHeight);
-		};
-		move();
-		addEventListener('scroll', move, { passive: true });
-		addEventListener('resize', move);
-		return () => (removeEventListener('scroll', move), removeEventListener('resize', move));
+		if (!motion.on || matchMedia('(max-width: 760px)').matches) return;
+		let kill = () => {};
+		void kit().then(({ gsap }) => {
+			const tween = gsap.to(frames!, {
+				y: () => -Math.max(0, frames!.scrollHeight - strip!.clientHeight),
+				ease: 'none',
+				scrollTrigger: { trigger: section!, start: 'top top', end: 'bottom bottom', scrub: 0.6, invalidateOnRefresh: true }
+			});
+			kill = () => (tween.scrollTrigger?.kill(), tween.kill());
+		});
+		return () => kill();
 	});
 </script>
 
@@ -30,7 +31,7 @@
 	<div class="stage">
 		<button class="hero" data-photo={hero.id} aria-label="Open: {hero.alt}" onclick={(e) => onopen(0, e.currentTarget.getBoundingClientRect())}><Photo photo={hero} eager sizes="82vw" /></button>
 		<div class="film" bind:this={strip}>
-			<ol class="frames" style:translate="0 {shift}px">
+			<ol class="frames" bind:this={frames}>
 				{#each rest as p, i (p.id)}
 					<li>
 						<span class="code mono" aria-hidden="true">{String(i + 1).padStart(2, '0')}A</span>
@@ -54,6 +55,8 @@
 		height: 100dvh;
 		display: grid;
 		grid-template-columns: minmax(0, 1fr) 260px;
+		/* The row is the screen's height: a tall hero photo must not stretch it (that left the strip nothing to travel). */
+		grid-template-rows: minmax(0, 1fr);
 		overflow: hidden;
 	}
 	.hero {
@@ -129,15 +132,16 @@
 		margin: 0;
 		color: var(--paper);
 	}
-	@media (prefers-reduced-motion: reduce) {
-		.cinematic {
+	/* Motion off (wide screens; the phone has its own layout below): no pinned scroll; the strip scrolls on its own. */
+	@media (min-width: 761px) {
+		:global(html[data-motion='off']) .cinematic {
 			height: auto;
 		}
-		.stage {
+		:global(html[data-motion='off']) .stage {
 			position: relative;
 			height: calc(100dvh - 88px);
 		}
-		.film {
+		:global(html[data-motion='off']) .film {
 			overflow-y: auto;
 		}
 	}

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
+	import Arrow from '#lib/components/Arrow.svelte';
 
 	const lost = $derived(page.status === 404);
 </script>
@@ -11,7 +12,7 @@
 <section class="lost">
 	<div class="frame" aria-hidden="true"><span class="mono">{lost ? 'No frame' : `Error ${page.status}`}</span></div>
 	<h1>{lost ? 'Frame 404' : 'This frame broke'}</h1>
-	<p class="mono">{lost ? 'This one never left the camera.' : 'The page stopped while loading.'} <a href={resolve('/') + '#chapters'}>← back to the work</a></p>
+	<p class="mono">{lost ? 'This one never left the camera.' : 'The page stopped while loading.'} <a href={resolve('/') + '#chapters'}><Arrow glyph="←" /> back to the work</a></p>
 </section>
 
 <style>
