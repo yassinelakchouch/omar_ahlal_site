@@ -24,7 +24,10 @@
 		void kit().then(({ gsap, ScrollTrigger }) => {
 			gsap.to(section!.querySelector('.frame'), { clipPath: 'inset(0% 0% 0% 0%)', duration: 0.3, ease: 'power2.out' });
 			batch = ScrollTrigger.batch(section!.querySelectorAll('li'), {
-				onEnter: (els) => void gsap.fromTo(els, { y: -40, rotation: () => gsap.utils.random(-8, 8) }, { y: 0, rotation: 0, opacity: 1, duration: 0.6, ease: 'back.out(1.4)', stagger: 0.07, delay: 0.2 }),
+				onEnter: (els) => {
+					gsap.fromTo(els, { y: -40, rotation: () => gsap.utils.random(-8, 8) }, { y: 0, rotation: 0, duration: 0.6, ease: 'back.out(1.4)', stagger: 0.07, delay: 0.2 });
+					gsap.fromTo(els, { opacity: 0 }, { opacity: 1, duration: 0.15, ease: 'none', stagger: 0.07, delay: 0.2 });
+				},
 				once: true,
 				start: 'top 92%'
 			});
