@@ -40,14 +40,13 @@
 	const item = $derived(items[index]);
 	const last = $derived(items.length - 1);
 	const ratio = $derived(item?.width && item?.height ? item.width / item.height : 4 / 5);
-	const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 	const pointers = new Map<number, { x: number; y: number }>();
 	let gesture: { x: number; y: number; dist: number; scale: number; tx: number; ty: number } | null = null;
 
 	onMount(() => {
 		dialog?.showModal();
-		// Opening grows the box from the tile it came from; with animations off it simply appears.
-		if (origin && frame && !reduce) {
+		// Opening grows the box from the tile it came from. Always, as the rest of the site (owner, 7 Nov).
+		if (origin && frame) {
 			const to = frame.getBoundingClientRect();
 			const t = `translate(${origin.left - to.left}px, ${origin.top - to.top}px) scale(${origin.width / to.width}, ${origin.height / to.height})`;
 			frame.animate([{ transform: t, transformOrigin: '0 0' }, { transform: 'none', transformOrigin: '0 0' }], { duration: 260, easing: 'cubic-bezier(.2,.8,.2,1)' });
@@ -380,16 +379,6 @@
 		overflow-y: auto;
 		background: var(--mat);
 		color: var(--ink);
-	}
-	@media (prefers-reduced-motion: reduce) {
-		img {
-			transition: none;
-		}
-		.bar {
-			animation: none;
-			width: 100%;
-			opacity: 0.4;
-		}
 	}
 	/* Phone: the photo fills the width; the admin's panel follows below it. */
 	@media (max-width: 700px) {
