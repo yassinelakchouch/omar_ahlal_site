@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
+	import Arrow from '#lib/components/Arrow.svelte';
 	import ChapterIndex from '#lib/components/ChapterIndex.svelte';
 	import PhoneBar from '#lib/components/PhoneBar.svelte';
 	import Photo from '#lib/components/Photo.svelte';
@@ -24,7 +25,7 @@
 	<Wordmark />
 	<div class="foot">
 		<p class="statement">{STATEMENT}</p>
-		<a class="cue" href="#chapters"><span>{NAME}</span><span class="muted">({total}) Chapters ↓</span></a>
+		<a class="cue" href="#chapters"><span>{NAME}</span><span class="muted">({total}) Chapters <Arrow glyph="↓" /></span></a>
 	</div>
 	<ul class="three" aria-label="Three chapters">
 		{#each three as c (c.slug)}<li><a href={resolve('/chapters/[slug]', { slug: c.slug })} aria-label={c.title}><Photo photo={coverOf(c)} sizes="112px" /></a></li>{/each}

@@ -1,7 +1,9 @@
 <script lang="ts">
 	import '@fontsource/bodoni-moda/400.css';
 	import { resolve } from '$app/paths';
+	import Arrow from '#lib/components/Arrow.svelte';
 	import PhoneBar from '#lib/components/PhoneBar.svelte';
+	import { magnet } from '#lib/interactions.js';
 	import Photo from '#lib/components/Photo.svelte';
 	import { NAME } from '#lib/copy.js';
 	import type { PageProps } from './$types';
@@ -26,7 +28,7 @@
 		<h1>{first}<br />{last.join(' ')}</h1>
 		<p>{a.text}</p>
 		<ul class="facts">{#each a.facts as f (f)}<li class="mono">{f}</li>{/each}</ul>
-		<a class="work" href={resolve('/contact')}>Work with me ↗</a>
+		<a class="work" href={resolve('/contact')} {@attach magnet}>Work with me <Arrow glyph="↗" /></a>
 	</div>
 </section>
 
@@ -95,6 +97,7 @@
 		list-style: none;
 	}
 	.work {
+		gap: 6px;
 		height: 40px;
 		padding: 0 18px;
 		display: inline-flex;
