@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { ROLL, kit, motion } from '#lib/motion.svelte.js';
+	import { ROLL, kit } from '#lib/motion.js';
 
 	let { text, on }: { text: string; on: boolean } = $props();
 	let mask = $state<HTMLSpanElement>();
@@ -8,7 +8,7 @@
 	$effect(() => {
 		const rolled = on;
 		void kit().then(({ gsap }) => {
-			if (mask && motion.on) gsap.to(mask.children, { yPercent: rolled ? -100 : 0, ...ROLL, overwrite: true });
+			if (mask) gsap.to(mask.children, { yPercent: rolled ? -100 : 0, ...ROLL, overwrite: true });
 		});
 	});
 </script>

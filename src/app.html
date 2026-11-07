@@ -5,19 +5,17 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<meta name="text-scale" content="scale" />
 		<script>
-			try {
-				var m = localStorage.getItem('motion') === 'off' ? 'off' : 'on';
-				document.documentElement.dataset.motion = m;
-				if (m === 'on' && !sessionStorage.getItem('seen')) {
-					document.documentElement.classList.add('first');
-					sessionStorage.setItem('seen', '1');
+			// Starting states hide only once this runs, never without JavaScript. Every full load opens with the loader;
+			// if GSAP isn't ready in 4 s, the page is shown still.
+			var h = document.documentElement;
+			h.dataset.motion = 'on';
+			h.classList.add('first');
+			setTimeout(function () {
+				if (!window.__motionReady) {
+					h.dataset.motion = 'off';
+					h.classList.remove('first');
 				}
-				setTimeout(function () {
-					if (!window.__motionReady) document.documentElement.dataset.motion = 'off';
-				}, 4000);
-			} catch (e) {
-				document.documentElement.dataset.motion = 'off';
-			}
+			}, 4000);
 		</script>
 		%sveltekit.head%
 	</head>

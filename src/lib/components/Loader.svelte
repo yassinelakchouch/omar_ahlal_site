@@ -1,15 +1,15 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { page } from '$app/state';
-	import { kit } from '#lib/motion.svelte.js';
+	import { kit } from '#lib/motion.js';
 	import { coverOf } from '#lib/site.js';
 
 	const covers = page.data.site.chapters.filter((c) => c.photos.length).map(coverOf);
 	let veil = $state<HTMLElement>();
 	let strip = $state<HTMLElement>();
 
-	// A1 (O-15, the loader picked on O-06): first visit of the session only, marked by app.html before the first paint.
-	// Frames run up the strip, then the strip leaves for the name. Without GSAP, a CSS safety hides it at 3 s.
+	// A1 (O-15, the loader picked on O-06): every full load, marked by app.html before the first paint; never on a move inside
+	// the site. It also loads GSAP for the page. Frames run up the strip, then it leaves; without GSAP, a CSS safety hides it at 3 s.
 	onMount(() => {
 		const html = document.documentElement;
 		if (!html.classList.contains('first')) return;

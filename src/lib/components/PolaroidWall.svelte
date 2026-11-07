@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import Photo from './Photo.svelte';
-	import { SETTLE, kit } from '#lib/motion.svelte.js';
+	import { SETTLE, arrived, kit } from '#lib/motion.js';
 	import type { Chapter } from '#lib/site.js';
 
 	type Props = { chapter: Chapter; count: string; onopen: (index: number, from: DOMRect) => void };
@@ -21,20 +21,27 @@
 	// W3 (O-15): each polaroid lands as it comes into view, then its pin goes in.
 	onMount(() => {
 		let batch: { kill: () => void }[] = [];
-		void kit().then(({ gsap, ScrollTrigger }) => {
+		let alive = true;
+		// After the loader hands over: on a full load the entrance played under it.
+		void Promise.all([kit(), arrived()]).then(([{ gsap, ScrollTrigger }]) => {
+			if (!alive) return;
 			batch = ScrollTrigger.batch(section!.querySelectorAll('li'), {
 				onEnter: (els) =>
 					void els.forEach((el, i) =>
 						gsap.timeline({ delay: i * 0.09 })
 							// Lands on its own hand-placed tilt (GSAP folds the CSS rotate into its transform, so the tilt is the end value).
-							.fromTo(el, { y: -50, rotation: tilt(el) - 8 }, { y: 0, rotation: tilt(el), opacity: 1, ...SETTLE, duration: 0.55 })
-							.fromTo(el.querySelector('.pin'), { scale: 0 }, { scale: 1, duration: 0.25, ease: 'back.out(3)' }, '-=0.1')
+							.fromTo(el, { y: -50, rotation: tilt(el) - 8 }, { y: 0, rotation: tilt(el), ...SETTLE, duration: 0.55 })
+							.fromTo(el, { opacity: 0 }, { opacity: 1, duration: 0.15, ease: 'none' }, 0)
+							.fromTo(el.querySelector('.pin'), { scale: 0, autoAlpha: 0 }, { scale: 1, autoAlpha: 1, duration: 0.25, ease: 'back.out(3)' }, '-=0.1')
 					),
 				once: true,
 				start: 'top 92%'
 			});
 		});
-		return () => batch.forEach((t) => t.kill());
+		return () => {
+			alive = false;
+			batch.forEach((t) => t.kill());
+		};
 	});
 </script>
 
@@ -106,7 +113,7 @@
 		opacity: 0;
 	}
 	:global(html[data-motion='on']) .pin {
-		transform: scale(0);
+		visibility: hidden;
 	}
 
 	.polaroid {
@@ -126,11 +133,10 @@
 	.pin {
 		position: absolute;
 		z-index: 2;
-		left: 50%;
+		left: calc(50% - 11px);
 		top: 4px;
 		width: 22px;
 		height: 22px;
-		translate: -50% 0;
 		border-radius: 50%;
 		background: radial-gradient(circle at 35% 35%, #fff, #cfcfcf);
 		box-shadow: 0 3px 6px rgba(0, 0, 0, 0.25);

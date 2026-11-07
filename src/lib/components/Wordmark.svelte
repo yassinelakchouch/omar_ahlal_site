@@ -3,30 +3,40 @@
 	import { page } from '$app/state';
 	import Photo from './Photo.svelte';
 	import { BRAND, NAME } from '#lib/copy.js';
-	import { SETTLE, kit } from '#lib/motion.svelte.js';
+	import { SETTLE, arrived, kit } from '#lib/motion.js';
 	import { coverOf, type Photo as P } from '#lib/site.js';
 
 	const covers = page.data.site.chapters.filter((c) => c.photos.length).map(coverOf);
 	// The prerendered page shows the first chapter's cover; each visit then picks one of his chapters (O-05: "changes per visit").
 	let photo = $state<P>(covers[0]);
-	let name = $state<HTMLElement>();
-	let over = $state<HTMLElement>();
+	let root = $state<HTMLElement>();
 
-	// A2 + A3 (O-15): the letters rise once, then the portrait drops onto the name and settles; after the loader on a first visit.
+	// A2 + A3 (O-15): the letters rise once, then the portrait drops onto the name and settles (after the loader on a full load).
+	// GSAP sets every start transform itself (fromTo); CSS only hides until then. The portrait's centring lives on .over,
+	// its drop on .drop, so the tween never touches the centring.
 	onMount(() => {
 		photo = covers[Math.floor(Math.random() * covers.length)];
-		void kit().then(({ gsap }) => {
-			const after = document.documentElement.classList.contains('first') ? 1.5 : 0.1;
-			gsap.timeline({ delay: after })
-				.to(name!.querySelectorAll('.l'), { yPercent: 0, duration: 0.6, ease: 'power3.out', stagger: 0.05 })
-				.to(over!, { y: 0, rotation: 0, opacity: 1, ...SETTLE }, 0.15);
+		let revert = () => {};
+		void Promise.all([kit(), arrived()]).then(([{ gsap }]) => {
+			if (!root?.isConnected) return;
+			const ctx = gsap.context(() => {
+				gsap.set(['.clip', '.drop'], { visibility: 'visible' });
+				gsap.timeline({ delay: 0.1 })
+					.fromTo('.l', { yPercent: 110 }, { yPercent: 0, duration: 0.6, ease: 'power3.out', stagger: 0.05 })
+					.fromTo('.drop', { y: -60, rotation: -7 }, { y: 0, rotation: 0, ...SETTLE }, 0.15)
+					.fromTo('.drop', { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.15, ease: 'none' }, 0.15);
+			}, root);
+			revert = () => ctx.revert();
 		});
+		return () => revert();
 	});
 </script>
 
-<div class="wordmark">
-	<h1 class="name" bind:this={name} aria-label="{BRAND}, {NAME}"><span class="clip" aria-hidden="true">{#each [...BRAND] as ch, i (i)}<span class="l">{ch}</span>{/each}</span></h1>
-	<div class="over" bind:this={over} style:aspect-ratio="300 / 452">{#key photo.id}<Photo {photo} eager sizes="(max-width: 760px) 190px, 300px" />{/key}</div>
+<div class="wordmark" bind:this={root}>
+	<h1 class="name" aria-label="{BRAND}, {NAME}"><span class="clip" aria-hidden="true">{#each [...BRAND] as ch, i (i)}<span class="l">{ch}</span>{/each}</span></h1>
+	<div class="over" style:aspect-ratio="300 / 452">
+		<div class="drop">{#key photo.id}<Photo {photo} eager sizes="(max-width: 760px) 190px, 300px" />{/key}</div>
+	</div>
 </div>
 
 <style>
@@ -58,17 +68,18 @@
 		position: absolute;
 		left: 50%;
 		top: 50%;
-		width: clamp(190px, 20.8vw, 300px);
+		/* Never taller than its row: on a laptop 704 px high the portrait ran under the fold. */
+		width: min(clamp(190px, 20.8vw, 300px), calc((100dvh - 290px) * 0.63));
 		translate: -50% -46%;
+	}
+	.drop {
+		height: 100%;
 		box-shadow: 0 24px 50px rgba(17, 17, 17, 0.25);
 	}
-	/* The starting state, only while motion is on (app.html turns it off if GSAP isn't ready in 4 s). */
-	:global(html[data-motion='on']) .l {
-		transform: translateY(110%);
-	}
-	:global(html[data-motion='on']) .over {
-		opacity: 0;
-		transform: translateY(-60px) rotate(-7deg);
+	/* Hidden only while motion is on and until GSAP takes over (app.html turns motion off if GSAP isn't ready in 4 s). */
+	:global(html[data-motion='on']) .clip,
+	:global(html[data-motion='on']) .drop {
+		visibility: hidden;
 	}
 	@media (max-width: 760px) {
 		.wordmark {
@@ -78,6 +89,8 @@
 		.over {
 			top: 40px;
 			translate: -50% 0;
+		}
+		.drop {
 			box-shadow: 0 16px 30px rgba(17, 17, 17, 0.25);
 		}
 	}

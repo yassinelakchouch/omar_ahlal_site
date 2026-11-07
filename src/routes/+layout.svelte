@@ -45,13 +45,6 @@
 		font: 16px/1.5 var(--sans);
 		-webkit-font-smoothing: antialiased;
 	}
-	/* Motion off (the stored switch): every CSS transition and animation is cut; GSAP ends its tweens at once. */
-	:global(html[data-motion='off'] *),
-	:global(html[data-motion='off'] *::before),
-	:global(html[data-motion='off'] *::after) {
-		transition: none !important;
-		animation: none !important;
-	}
 	:global(:focus-visible) {
 		outline: 2px solid var(--ember);
 		outline-offset: 2px;

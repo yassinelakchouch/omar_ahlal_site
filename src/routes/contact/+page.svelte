@@ -2,7 +2,7 @@
 	import Arrow from '#lib/components/Arrow.svelte';
 	import PhoneBar from '#lib/components/PhoneBar.svelte';
 	import { magnet } from '#lib/interactions.js';
-	import { SETTLE, kit } from '#lib/motion.svelte.js';
+	import { SETTLE, kit } from '#lib/motion.js';
 	import ShootChips from '#lib/components/ShootChips.svelte';
 	import { send, type Kind } from '#lib/contact.js';
 	import { EMAIL, NAME } from '#lib/copy.js';
@@ -18,8 +18,9 @@
 	function drop(card: HTMLElement) {
 		void kit().then(({ gsap }) =>
 			gsap.timeline()
-				.fromTo(card, { y: -60, rotation: -8, opacity: 0 }, { y: 0, rotation: -2, opacity: 1, ...SETTLE })
-				.fromTo(card.querySelector('.pin'), { scale: 0 }, { scale: 1, duration: 0.25, ease: 'back.out(3)' }, '-=0.15')
+				.fromTo(card, { y: -60, rotation: -8 }, { y: 0, rotation: -2, ...SETTLE })
+				.fromTo(card, { opacity: 0 }, { opacity: 1, duration: 0.15, ease: 'none' }, 0)
+				.fromTo(card.querySelector('.pin'), { scale: 0, autoAlpha: 0 }, { scale: 1, autoAlpha: 1, duration: 0.25, ease: 'back.out(3)' }, '-=0.15')
 		);
 	}
 
@@ -171,11 +172,10 @@
 	}
 	.pin {
 		position: absolute;
-		left: 50%;
+		left: calc(50% - 11px);
 		top: 8px;
 		width: 22px;
 		height: 22px;
-		translate: -50% 0;
 		border-radius: 50%;
 		background: radial-gradient(circle at 35% 35%, #fff, #cfcfcf);
 		box-shadow: 0 3px 6px rgba(0, 0, 0, 0.25);

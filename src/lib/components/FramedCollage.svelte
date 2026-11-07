@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import Photo from './Photo.svelte';
-	import { kit } from '#lib/motion.svelte.js';
+	import { arrived, kit } from '#lib/motion.js';
 	import type { Chapter } from '#lib/site.js';
 
 	type Props = { chapter: Chapter; count: string; onopen: (index: number, from: DOMRect) => void };
@@ -21,15 +21,24 @@
 	// W2 (O-15): the frame draws, then his photos are placed by hand, one by one as they come into view.
 	onMount(() => {
 		let batch: { kill: () => void }[] = [];
-		void kit().then(({ gsap, ScrollTrigger }) => {
+		let alive = true;
+		// After the loader hands over: on a full load the entrance played under it.
+		void Promise.all([kit(), arrived()]).then(([{ gsap, ScrollTrigger }]) => {
+			if (!alive) return;
 			gsap.to(section!.querySelector('.frame'), { clipPath: 'inset(0% 0% 0% 0%)', duration: 0.3, ease: 'power2.out' });
 			batch = ScrollTrigger.batch(section!.querySelectorAll('li'), {
-				onEnter: (els) => void gsap.fromTo(els, { y: -40, rotation: () => gsap.utils.random(-8, 8) }, { y: 0, rotation: 0, opacity: 1, duration: 0.6, ease: 'back.out(1.4)', stagger: 0.07, delay: 0.2 }),
+				onEnter: (els) => {
+					gsap.fromTo(els, { y: -40, rotation: () => gsap.utils.random(-8, 8) }, { y: 0, rotation: 0, duration: 0.6, ease: 'back.out(1.4)', stagger: 0.07, delay: 0.2 });
+					gsap.fromTo(els, { opacity: 0 }, { opacity: 1, duration: 0.15, ease: 'none', stagger: 0.07, delay: 0.2 });
+				},
 				once: true,
 				start: 'top 92%'
 			});
 		});
-		return () => batch.forEach((t) => t.kill());
+		return () => {
+			alive = false;
+			batch.forEach((t) => t.kill());
+		};
 	});
 </script>
 
