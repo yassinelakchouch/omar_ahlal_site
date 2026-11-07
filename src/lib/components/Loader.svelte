@@ -5,7 +5,7 @@
 
 	let top = $state<HTMLElement>();
 	let bottom = $state<HTMLElement>();
-	let mark = $state<HTMLElement>();
+	let sign = $state<HTMLElement>();
 	let count = $state<HTMLElement>();
 
 	// A1 (O-15, revised 7 Nov: the owner dropped the film strip): every full load opens on the darkroom ink with his mark and a
@@ -17,7 +17,7 @@
 			const n = { v: 0 };
 			gsap.timeline({ onComplete: () => html.classList.remove('first') })
 				.to(n, { v: 100, duration: 0.8, ease: 'power2.inOut', onUpdate: () => count && (count.textContent = String(Math.round(n.v)).padStart(3, '0')) })
-				.to(mark!, { autoAlpha: 0, duration: 0.15 })
+				.to(sign!, { autoAlpha: 0, duration: 0.15 })
 				.to(top!, { yPercent: -100, duration: 0.55, ease: 'power3.inOut' }, '<')
 				.to(bottom!, { yPercent: 100, duration: 0.55, ease: 'power3.inOut' }, '<');
 		});
@@ -27,7 +27,7 @@
 <div class="veil" aria-hidden="true">
 	<div class="half top" bind:this={top}></div>
 	<div class="half bottom" bind:this={bottom}></div>
-	<div class="mark" bind:this={mark}>
+	<div class="sign" bind:this={sign}>
 		<img src={asset('brand/favicon.svg')} alt="" width="56" height="56" />
 		<span class="count" bind:this={count}>000</span>
 	</div>
@@ -63,7 +63,7 @@
 	.bottom {
 		bottom: 0;
 	}
-	.mark {
+	.sign {
 		position: relative;
 		display: grid;
 		justify-items: center;
