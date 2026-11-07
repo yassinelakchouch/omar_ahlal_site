@@ -14,7 +14,7 @@
 	const total = $derived(pad(chapters.length));
 
 	// The phone's three chapters to tap (O-05 P1): night, wedding and street, for range.
-	const three = $derived(['night-party', 'wedding', 'uk-street'].flatMap((s) => chapters.filter((c) => c.slug === s)));
+	const three = $derived(['night-party', 'wedding', 'medina-street'].flatMap((s) => chapters.filter((c) => c.slug === s)));
 </script>
 
 <svelte:head>

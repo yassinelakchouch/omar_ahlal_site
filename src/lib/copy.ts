@@ -9,9 +9,9 @@ export const STATEMENT = 'Photographer & videographer in Morocco. Portraits, wed
 
 export const NOTES: Record<string, string> = {
 	'natural-portrait': 'golden hour',
-	'night-party': 'club light',
+	'night-party': 'after dark',
 	'creative-portrait': 'earthy, moody',
-	'uk-street': 'black and white',
+	'medina-street': 'black and white',
 	wedding: 'Morocco',
 	cinematic: '35 mm',
 	brand: 'branding'
