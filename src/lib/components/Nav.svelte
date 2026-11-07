@@ -36,6 +36,23 @@
 		header!.addEventListener('focusin', () => show(true));
 		return () => removeEventListener('scroll', scroll);
 	});
+
+	// N4 (the O-15 family): the menu slides up and settles while its words rise one by one; every way out slides it back down.
+	async function openMenu() {
+		if (!sheet || sheet.open) return;
+		sheet.showModal();
+		const { gsap } = await kit();
+		gsap.timeline()
+			.fromTo(sheet, { yPercent: 100, '--dim': 0 }, { yPercent: 0, '--dim': 0.4, duration: 0.5, ease: 'power3.out', overwrite: true })
+			.fromTo(sheet.querySelectorAll('.w'), { yPercent: 110 }, { yPercent: 0, duration: 0.45, ease: 'power3.out', stagger: 0.05 }, 0.12);
+	}
+	function closeMenu() {
+		if (!sheet?.open) return;
+		kit().then(
+			({ gsap }) => gsap.to(sheet!, { yPercent: 100, '--dim': 0, duration: 0.3, ease: 'power2.in', overwrite: true, onComplete: () => sheet?.close() }),
+			() => sheet?.close()
+		);
+	}
 </script>
 
 <header class="nav" bind:this={header}>
@@ -48,18 +65,27 @@
 	<div class="end">
 		<a class="book" href={resolve('/contact')} {@attach magnet}>Book a shoot <Arrow glyph="↗" /></a>
 	</div>
-	<button class="open" aria-haspopup="dialog" onclick={() => sheet?.showModal()}>Menu</button>
+	<button class="open" aria-haspopup="dialog" onclick={openMenu}>Menu</button>
 </header>
 
-<dialog bind:this={sheet} class="sheet" aria-label="Menu" onclick={(e) => e.target === sheet && sheet?.close()}>
+<dialog
+	bind:this={sheet}
+	class="sheet"
+	aria-label="Menu"
+	onclick={(e) => e.target === sheet && closeMenu()}
+	oncancel={(e) => {
+		e.preventDefault();
+		closeMenu();
+	}}
+>
 	<nav aria-label="Main">
 		<ul>
-			{#each links as l (l.key)}<li><a href={l.href} aria-current={current === l.key ? 'page' : undefined} onclick={() => sheet?.close()}>{l.label}</a></li>{/each}
+			{#each links as l (l.key)}<li><a href={l.href} aria-current={current === l.key ? 'page' : undefined} onclick={closeMenu}><span class="mask"><span class="w">{l.label}</span></span></a></li>{/each}
 		</ul>
 	</nav>
-	<a class="book wide" href={resolve('/contact')} onclick={() => sheet?.close()}>Book a shoot ↗</a>
+	<a class="book wide" href={resolve('/contact')} onclick={closeMenu}>Book a shoot ↗</a>
 	<div class="row">
-		<button class="close" onclick={() => sheet?.close()}>Close</button>
+		<button class="close" onclick={closeMenu}>Close</button>
 	</div>
 </dialog>
 
@@ -135,7 +161,9 @@
 		background: none;
 		cursor: pointer;
 	}
+	/* border-box: 100% plus its padding ran 32 px past a phone's right edge, cutting the lines, the pill and Close. */
 	.sheet {
+		box-sizing: border-box;
 		margin: auto 0 0;
 		width: 100%;
 		max-width: none;
@@ -145,8 +173,16 @@
 		background: var(--mat);
 		color: var(--ink);
 	}
+	/* --dim is tweened on the sheet; its backdrop inherits it. */
 	.sheet::backdrop {
-		background: rgba(17, 17, 17, 0.4);
+		background: rgba(17, 17, 17, var(--dim, 0.4));
+	}
+	.mask {
+		display: block;
+		overflow: hidden;
+	}
+	.w {
+		display: block;
 	}
 	.sheet ul {
 		flex-direction: column;
