@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import Photo from './Photo.svelte';
-	import { kit } from '#lib/motion.svelte.js';
+	import { arrived, kit } from '#lib/motion.js';
 	import type { Chapter } from '#lib/site.js';
 
 	type Props = { chapter: Chapter; count: string; onopen: (index: number, from: DOMRect) => void };
@@ -21,7 +21,10 @@
 	// W2 (O-15): the frame draws, then his photos are placed by hand, one by one as they come into view.
 	onMount(() => {
 		let batch: { kill: () => void }[] = [];
-		void kit().then(({ gsap, ScrollTrigger }) => {
+		let alive = true;
+		// After the loader hands over: on a full load the entrance played under it.
+		void Promise.all([kit(), arrived()]).then(([{ gsap, ScrollTrigger }]) => {
+			if (!alive) return;
 			gsap.to(section!.querySelector('.frame'), { clipPath: 'inset(0% 0% 0% 0%)', duration: 0.3, ease: 'power2.out' });
 			batch = ScrollTrigger.batch(section!.querySelectorAll('li'), {
 				onEnter: (els) => {
@@ -32,7 +35,10 @@
 				start: 'top 92%'
 			});
 		});
-		return () => batch.forEach((t) => t.kill());
+		return () => {
+			alive = false;
+			batch.forEach((t) => t.kill());
+		};
 	});
 </script>
 

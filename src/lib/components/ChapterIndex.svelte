@@ -4,7 +4,7 @@
 	import { page } from '$app/state';
 	import Photo from './Photo.svelte';
 	import Roll from './Roll.svelte';
-	import { finePointer, kit } from '#lib/motion.svelte.js';
+	import { finePointer, kit } from '#lib/motion.js';
 	import { coverOf, frames } from '#lib/site.js';
 
 	const chapters = $derived(page.data.site.chapters.filter((c) => c.photos.length));

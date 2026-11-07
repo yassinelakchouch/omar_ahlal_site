@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import Photo from './Photo.svelte';
-	import { kit, motion } from '#lib/motion.svelte.js';
+	import { kit } from '#lib/motion.js';
 	import type { Chapter } from '#lib/site.js';
 
 	type Props = { chapter: Chapter; count: string; onopen: (index: number, from: DOMRect) => void };
@@ -11,9 +11,9 @@
 	let strip = $state<HTMLElement>();
 	let frames = $state<HTMLElement>();
 
-	// W4 (O-15): scrolling moves the strip frame by frame (ScrollTrigger scrub); with motion off it stays, and scrolls on its own.
+	// W4 (O-15): scrolling moves the strip frame by frame (ScrollTrigger scrub); if GSAP never loads, it stays and scrolls on its own.
 	onMount(() => {
-		if (!motion.on || matchMedia('(max-width: 760px)').matches) return;
+		if (matchMedia('(max-width: 760px)').matches) return;
 		let kill = () => {};
 		void kit().then(({ gsap }) => {
 			const tween = gsap.to(frames!, {
@@ -132,7 +132,7 @@
 		margin: 0;
 		color: var(--paper);
 	}
-	/* Motion off (wide screens; the phone has its own layout below): no pinned scroll; the strip scrolls on its own. */
+	/* GSAP never loaded (wide screens; the phone has its own layout below): no pinned scroll; the strip scrolls on its own. */
 	@media (min-width: 761px) {
 		:global(html[data-motion='off']) .cinematic {
 			height: auto;

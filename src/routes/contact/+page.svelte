@@ -2,7 +2,7 @@
 	import Arrow from '#lib/components/Arrow.svelte';
 	import PhoneBar from '#lib/components/PhoneBar.svelte';
 	import { magnet } from '#lib/interactions.js';
-	import { SETTLE, kit } from '#lib/motion.svelte.js';
+	import { SETTLE, kit } from '#lib/motion.js';
 	import ShootChips from '#lib/components/ShootChips.svelte';
 	import { send, type Kind } from '#lib/contact.js';
 	import { EMAIL, NAME } from '#lib/copy.js';

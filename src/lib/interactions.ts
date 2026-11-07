@@ -1,5 +1,5 @@
 import type { gsap as GSAP } from 'gsap';
-import { finePointer, kit, motion } from './motion.svelte';
+import { finePointer, kit } from './motion';
 
 // N3 · A magnetic pill: within 60 px it follows the pointer a third of the way, and returns with an elastic settle.
 export function magnet(node: HTMLElement) {
@@ -8,7 +8,7 @@ export function magnet(node: HTMLElement) {
 	let near = false;
 	void kit().then((k) => (g = k.gsap));
 	const move = (e: PointerEvent) => {
-		if (!g || !motion.on) return;
+		if (!g) return;
 		// Measured where the pill rests, not where the pull has moved it: it chased its own offset and shook at the edge.
 		const r = node.getBoundingClientRect();
 		const dx = e.clientX - (r.left + r.width / 2 - Number(g.getProperty(node, 'x')));
@@ -35,7 +35,6 @@ export function travel(node: HTMLElement) {
 	let run: ReturnType<typeof GSAP.timeline> | null = null;
 	const go = () =>
 		void kit().then(({ gsap }) => {
-			if (!motion.on) return;
 			run ??= gsap
 				.timeline({ paused: true, defaults: { duration: 0.32, ease: 'power3.out' } })
 				.fromTo(a, { x: 0, y: 0, opacity: 1 }, { x: dx * 12, y: dy * 12, opacity: 0, immediateRender: false }, 0)

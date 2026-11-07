@@ -4,7 +4,7 @@
 	import { page } from '$app/state';
 	import Arrow from './Arrow.svelte';
 	import { magnet } from '#lib/interactions.js';
-	import { kit, motion, setMotion } from '#lib/motion.svelte.js';
+	import { kit } from '#lib/motion.js';
 
 	let sheet = $state<HTMLDialogElement>();
 	let header = $state<HTMLElement>();
@@ -46,7 +46,6 @@
 		</ul>
 	</nav>
 	<div class="end">
-		<button class="switch" aria-pressed={motion.on} onclick={() => setMotion(!motion.on)}>Motion {motion.on ? 'on' : 'off'}</button>
 		<a class="book" href={resolve('/contact')} {@attach magnet}>Book a shoot <Arrow glyph="↗" /></a>
 	</div>
 	<button class="open" aria-haspopup="dialog" onclick={() => sheet?.showModal()}>Menu</button>
@@ -60,7 +59,6 @@
 	</nav>
 	<a class="book wide" href={resolve('/contact')} onclick={() => sheet?.close()}>Book a shoot ↗</a>
 	<div class="row">
-		<button class="switch" aria-pressed={motion.on} onclick={() => setMotion(!motion.on)}>Motion {motion.on ? 'on' : 'off'}</button>
 		<button class="close" onclick={() => sheet?.close()}>Close</button>
 	</div>
 </dialog>
@@ -90,8 +88,7 @@
 	}
 	ul a,
 	.open,
-	.close,
-	.switch {
+	.close {
 		font-family: var(--mono);
 		font-size: 12px;
 		letter-spacing: 0.04em;
@@ -113,14 +110,6 @@
 		display: flex;
 		align-items: center;
 		gap: 20px;
-	}
-	.switch {
-		min-height: 34px;
-		padding: 0;
-		border: 0;
-		background: none;
-		color: var(--muted);
-		cursor: pointer;
 	}
 	.book {
 		height: 34px;
@@ -186,7 +175,7 @@
 	}
 	.row {
 		display: flex;
-		justify-content: space-between;
+		justify-content: flex-end;
 		margin-top: 8px;
 	}
 	.close {

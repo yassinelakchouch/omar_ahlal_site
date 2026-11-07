@@ -3,7 +3,7 @@
 	import { page } from '$app/state';
 	import Photo from './Photo.svelte';
 	import { BRAND, NAME } from '#lib/copy.js';
-	import { SETTLE, kit } from '#lib/motion.svelte.js';
+	import { SETTLE, arrived, kit } from '#lib/motion.js';
 	import { coverOf, type Photo as P } from '#lib/site.js';
 
 	const covers = page.data.site.chapters.filter((c) => c.photos.length).map(coverOf);
@@ -11,17 +11,17 @@
 	let photo = $state<P>(covers[0]);
 	let root = $state<HTMLElement>();
 
-	// A2 + A3 (O-15): the letters rise once, then the portrait drops onto the name and settles (after the loader on a first visit).
+	// A2 + A3 (O-15): the letters rise once, then the portrait drops onto the name and settles (after the loader on a full load).
 	// GSAP sets every start transform itself (fromTo); CSS only hides until then. The portrait's centring lives on .over,
 	// its drop on .drop, so the tween never touches the centring.
 	onMount(() => {
 		photo = covers[Math.floor(Math.random() * covers.length)];
 		let revert = () => {};
-		void kit().then(({ gsap }) => {
+		void Promise.all([kit(), arrived()]).then(([{ gsap }]) => {
+			if (!root?.isConnected) return;
 			const ctx = gsap.context(() => {
-				const after = document.documentElement.classList.contains('first') ? 1.5 : 0.1;
 				gsap.set(['.clip', '.drop'], { visibility: 'visible' });
-				gsap.timeline({ delay: after })
+				gsap.timeline({ delay: 0.1 })
 					.fromTo('.l', { yPercent: 110 }, { yPercent: 0, duration: 0.6, ease: 'power3.out', stagger: 0.05 })
 					.fromTo('.drop', { y: -60, rotation: -7 }, { y: 0, rotation: 0, ...SETTLE }, 0.15)
 					.fromTo('.drop', { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.15, ease: 'none' }, 0.15);

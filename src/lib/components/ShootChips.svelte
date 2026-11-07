@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte';
 	import { KINDS, type Kind } from '#lib/contact.js';
 	import type { Flip as FlipType } from 'gsap/Flip';
-	import { kit } from '#lib/motion.svelte.js';
+	import { kit } from '#lib/motion.js';
 
 	let { value = $bindable() }: { value: Kind } = $props();
 	let group = $state<HTMLFieldSetElement>();

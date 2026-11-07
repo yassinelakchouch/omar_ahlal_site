@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import Photo from './Photo.svelte';
-	import { SETTLE, kit } from '#lib/motion.svelte.js';
+	import { SETTLE, arrived, kit } from '#lib/motion.js';
 	import type { Chapter } from '#lib/site.js';
 
 	type Props = { chapter: Chapter; count: string; onopen: (index: number, from: DOMRect) => void };
@@ -21,7 +21,10 @@
 	// W3 (O-15): each polaroid lands as it comes into view, then its pin goes in.
 	onMount(() => {
 		let batch: { kill: () => void }[] = [];
-		void kit().then(({ gsap, ScrollTrigger }) => {
+		let alive = true;
+		// After the loader hands over: on a full load the entrance played under it.
+		void Promise.all([kit(), arrived()]).then(([{ gsap, ScrollTrigger }]) => {
+			if (!alive) return;
 			batch = ScrollTrigger.batch(section!.querySelectorAll('li'), {
 				onEnter: (els) =>
 					void els.forEach((el, i) =>
@@ -35,7 +38,10 @@
 				start: 'top 92%'
 			});
 		});
-		return () => batch.forEach((t) => t.kill());
+		return () => {
+			alive = false;
+			batch.forEach((t) => t.kill());
+		};
 	});
 </script>
 
