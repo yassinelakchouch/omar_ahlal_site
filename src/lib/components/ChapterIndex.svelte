@@ -3,7 +3,7 @@
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import Photo from './Photo.svelte';
-	import Roll from './Roll.svelte';
+	import IndexRow from './IndexRow.svelte';
 	import { finePointer, kit } from '#lib/motion.js';
 	import { coverOf, frames } from '#lib/site.js';
 
@@ -48,19 +48,18 @@
 <ol bind:this={list} class="index" onpointerleave={leave}>
 	{#each chapters as c, i (c.slug)}
 		<li>
-			<a
-				class="row"
-				class:on={i === active}
+			<IndexRow
+				n={c.n}
+				title={c.title}
+				note={frames(c)}
 				href={resolve('/chapters/[slug]', { slug: c.slug })}
+				on={i === active}
 				onpointerenter={(e) => finePointer() && point(i, e.currentTarget)}
 				onfocus={(e) => point(i, e.currentTarget)}
 				onblur={leave}
 			>
-				<span class="n">{c.n}</span>
-				<span class="title"><Roll text={c.title} on={i === active} /></span>
-				<span class="note">{frames(c)}</span>
-				<span class="thumb" aria-hidden="true"><Photo photo={coverOf(c)} sizes="44px" /></span>
-			</a>
+				{#snippet thumb()}<Photo photo={coverOf(c)} sizes="44px" />{/snippet}
+			</IndexRow>
 		</li>
 	{/each}
 	<li class="float" bind:this={float} aria-hidden="true">
@@ -74,45 +73,6 @@
 		margin: 0;
 		padding: 0;
 		list-style: none;
-	}
-	.row {
-		display: grid;
-		grid-template-columns: 70px 1fr auto;
-		align-items: baseline;
-		padding: 14px 0;
-		border-top: 1px solid var(--ink);
-		color: var(--ink);
-		text-decoration: none;
-		transition: color 0.2s;
-	}
-	.n,
-	.note {
-		font-family: var(--mono);
-		font-size: 13px;
-		letter-spacing: 0.04em;
-	}
-	.note {
-		font-size: 12px;
-		color: var(--muted);
-	}
-	.title {
-		font-family: var(--caps);
-		font-weight: 500;
-		font-size: clamp(36px, 4.7vw, 68px);
-		line-height: 0.95;
-		letter-spacing: 0.01em;
-		text-transform: uppercase;
-	}
-	.row.on,
-	.row.on .note {
-		color: var(--ember);
-	}
-	.row:focus-visible {
-		outline: 2px solid var(--ember);
-		outline-offset: 4px;
-	}
-	.thumb {
-		display: none;
 	}
 	.float {
 		position: absolute;
@@ -134,28 +94,10 @@
 	.shot.shown {
 		visibility: visible;
 	}
-	/* Phone: no hover to float a photo, so each row carries a small one. */
+	/* Phone: no hover to float a photo; each row carries a small one instead (IndexRow). */
 	@media (max-width: 760px) {
-		.row {
-			grid-template-columns: 30px 1fr auto;
-			align-items: center;
-			padding: 10px 0;
-		}
-		.n {
-			font-size: 12px;
-		}
-		.note,
 		.float {
 			display: none;
-		}
-		.title {
-			font-size: 36px;
-			line-height: 1;
-		}
-		.thumb {
-			display: block;
-			width: 44px;
-			height: 54px;
 		}
 	}
 </style>
