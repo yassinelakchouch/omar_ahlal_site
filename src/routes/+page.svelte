@@ -1,115 +1,138 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import { resolve } from '$app/paths';
-	import Arrow from '#lib/components/Arrow.svelte';
-	import ChapterIndex from '#lib/components/ChapterIndex.svelte';
+	import ChapterStrip from '#lib/components/ChapterStrip.svelte';
+	import IndexRow from '#lib/components/IndexRow.svelte';
 	import PhoneBar from '#lib/components/PhoneBar.svelte';
-	import Photo from '#lib/components/Photo.svelte';
 	import Wordmark from '#lib/components/Wordmark.svelte';
 	import { NAME, STATEMENT } from '#lib/copy.js';
-	import { coverOf, pad } from '#lib/site.js';
+	import { finePointer } from '#lib/motion.js';
+	import { pad } from '#lib/site.js';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
 	const chapters = $derived(data.site.chapters.filter((c) => c.photos.length));
 	const total = $derived(pad(chapters.length));
 
-	// The phone's three chapters to tap (O-05 P1): night, wedding and street, for range.
-	const three = $derived(['night-party', 'wedding', 'medina-street'].flatMap((s) => chapters.filter((c) => c.slug === s)));
+	// O-18 A: seven chapters on the first screen, one open. The prerendered page opens the first; each visit then opens another.
+	let open = $state(0);
+	let rows = $state<HTMLOListElement>();
+	onMount(() => {
+		open = Math.floor(Math.random() * chapters.length);
+	});
+
+	// The index rows are the links: arrows move between them, Home and End jump, and focus opens the chapter's print.
+	function keys(e: KeyboardEvent) {
+		const links = [...(rows?.querySelectorAll<HTMLAnchorElement>('a') ?? [])];
+		const at = links.indexOf(document.activeElement as HTMLAnchorElement);
+		if (at < 0) return;
+		const step = ({ ArrowDown: 1, ArrowRight: 1, ArrowUp: -1, ArrowLeft: -1 } as Record<string, number>)[e.key];
+		let to = -1;
+		if (step) to = (at + step + links.length) % links.length;
+		if (e.key === 'Home') to = 0;
+		if (e.key === 'End') to = links.length - 1;
+		if (to < 0) return;
+		e.preventDefault();
+		links[to].focus();
+	}
 </script>
 
 <svelte:head>
 	<title>{NAME} · photographer & videographer in Morocco</title>
 </svelte:head>
 
-<section class="home">
-	<Wordmark />
-	<div class="foot">
+<!-- id="chapters": the menu's Work lands here, where the chapter index now lives (the list below it is gone, O-18). -->
+<section id="chapters" class="hero" aria-label="{NAME}">
+	<div class="side">
+		<div class="name"><Wordmark /></div>
 		<p class="statement">{STATEMENT}</p>
-		<a class="cue" href="#chapters"><span>{NAME}</span><span class="muted">({total}) Chapters <Arrow glyph="↓" /></span></a>
+		<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
+		<ol class="index" aria-label="Chapters" bind:this={rows} onkeydown={keys}>
+			{#each chapters as c, i (c.slug)}
+				<li>
+					<IndexRow
+						n={pad(i + 1)}
+						title={c.title}
+						note="{pad(c.photos.length)} fr."
+						href={resolve('/chapters/[slug]', { slug: c.slug })}
+						size="hero"
+						on={i === open}
+						onpointerenter={() => finePointer() && (open = i)}
+						onfocus={() => (open = i)}
+					/>
+				</li>
+			{/each}
+		</ol>
 	</div>
-	<ul class="three" aria-label="Three chapters">
-		{#each three as c (c.slug)}<li><a href={resolve('/chapters/[slug]', { slug: c.slug })} aria-label={c.title}><Photo photo={coverOf(c)} sizes="112px" /></a></li>{/each}
-	</ul>
-</section>
-
-<section id="chapters" class="chapters" aria-label="Chapters">
-	<ChapterIndex />
+	<div class="strip"><ChapterStrip {chapters} {open} onopen={(i) => (open = i)} /></div>
 </section>
 
 <PhoneBar meta="({total}) Chapters" label="Book a shoot ↗" href={resolve('/contact')} />
 
 <style>
-	.home {
-		min-height: calc(100dvh - 88px);
+	/* O-18 A: the name, the statement and the index beside the strip; the photos take the larger half of the first screen. */
+	.hero {
+		height: calc(100dvh - 88px);
+		min-height: 520px;
 		box-sizing: border-box;
 		display: grid;
-		grid-template-rows: 1fr auto;
-		padding: 56px 48px 44px;
+		grid-template-columns: 400px minmax(0, 1fr);
+		gap: 24px;
+		padding: 8px 48px 44px;
 	}
-	.foot {
+	.side {
 		display: flex;
-		justify-content: space-between;
-		align-items: end;
-		gap: 32px;
+		flex-direction: column;
+		min-height: 0;
 	}
 	.statement {
-		max-width: 560px;
-		margin: 0;
+		max-width: 400px;
+		margin: 28px 0 0;
 		font-weight: 600;
 		font-size: 20px;
 		line-height: 1.25;
 		letter-spacing: -0.005em;
 		text-transform: uppercase;
 	}
-	.cue {
-		display: grid;
-		justify-items: end;
-		gap: 6px;
-		font-family: var(--mono);
-		font-size: 12px;
-		letter-spacing: 0.04em;
-		text-transform: uppercase;
-		color: var(--ink);
-		text-decoration: none;
+	.index {
+		margin: auto 0 0;
+		padding: 0;
+		list-style: none;
 	}
-	.muted {
-		color: var(--muted);
-	}
-	.three {
-		display: none;
-	}
-	.chapters {
-		padding: 40px 48px 96px;
-		scroll-margin-top: 16px;
+	.strip {
+		min-width: 0;
+		min-height: 0;
 	}
 	@media (max-width: 760px) {
-		.home {
+		.hero {
+			height: auto;
 			min-height: 0;
-			display: grid;
-			grid-template-rows: none;
-			gap: 22px;
-			padding: 24px 16px 0;
+			grid-template-columns: minmax(0, 1fr);
+			gap: 16px;
+			padding: 8px 16px 0;
+		}
+		.side {
+			display: contents;
+		}
+		.name {
+			order: 1;
+		}
+		/* The strip fills to the fold so the whole statement clears the 104 px phone bar. */
+		.strip {
+			order: 2;
+			height: clamp(300px, calc(100svh - 428px), 560px);
 		}
 		.statement {
+			order: 3;
+			margin: 0;
 			font-size: 19px;
 		}
-		.cue {
-			display: none;
+		.index {
+			order: 4;
+			margin: 8px 0 0;
 		}
-		.three {
-			display: grid;
-			grid-template-columns: repeat(3, 1fr);
-			gap: 8px;
-			margin: 0;
-			padding: 0;
-			list-style: none;
-		}
-		.three a {
-			display: block;
-			aspect-ratio: 4 / 5;
-		}
-		.chapters {
-			padding: 32px 16px 150px;
+		.hero {
+			padding-bottom: 150px;
 		}
 	}
 </style>
