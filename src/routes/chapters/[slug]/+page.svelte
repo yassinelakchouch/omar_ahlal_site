@@ -2,16 +2,17 @@
 	import { resolve } from '$app/paths';
 	import Arrow from '#lib/components/Arrow.svelte';
 	import FilmStripChapter from '#lib/components/FilmStripChapter.svelte';
-	import FramedCollage from '#lib/components/FramedCollage.svelte';
+	import ChapterSpread from '#lib/components/ChapterSpread.svelte';
 	import ImageViewer from '#lib/components/ImageViewer.svelte';
 	import PhoneBar from '#lib/components/PhoneBar.svelte';
 	import PolaroidWall from '#lib/components/PolaroidWall.svelte';
 	import { NAME, STATEMENT } from '#lib/copy.js';
-	import { frames, pad } from '#lib/site.js';
+	import { frames, leadFirst, pad } from '#lib/site.js';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
-	const c = $derived(data.chapter);
+	// One order for the grid, its index and the viewer, so frame 01 is the first one everywhere.
+	const c = $derived(data.chapter.layout === 'spread' ? { ...data.chapter, photos: leadFirst(data.chapter.photos) } : data.chapter);
 	const count = $derived(`${data.chapter.n} / ${pad(data.total)}`);
 	let viewing = $state<{ index: number; origin: DOMRect | null } | null>(null);
 	const items = $derived(c.photos.map((p) => ({ id: p.id, kind: 'photo' as const, src: p.src, tone: p.tone, alt: p.alt, width: p.width, height: p.height })));
@@ -36,13 +37,16 @@
 	{:else if c.layout === 'polaroid'}
 		<PolaroidWall chapter={c} {count} onopen={open} />
 	{:else}
-		<FramedCollage chapter={c} {count} onopen={open} />
+		<ChapterSpread chapter={c} {count} next={data.next} onopen={open} />
 	{/if}
 {/key}
 
-<nav class="next" aria-label="Next chapter">
-	<a href={resolve('/chapters/[slug]', { slug: data.next.slug })}><span class="mono">Next · {data.next.n}</span><span class="title">{data.next.title} <Arrow glyph="→" /></span></a>
-</nav>
+<!-- A spread carries Next in its side column (O-19); the strip and the polaroid wall end with it here. -->
+{#if c.layout !== 'spread'}
+	<nav class="next" aria-label="Next chapter">
+		<a href={resolve('/chapters/[slug]', { slug: data.next.slug })}><span class="mono">Next · {data.next.n}</span><span class="title">{data.next.title} <Arrow glyph="→" /></span></a>
+	</nav>
+{/if}
 
 <PhoneBar meta={frames(c)} label="Next · {data.next.title} →" href={resolve('/chapters/[slug]', { slug: data.next.slug })} />
 
