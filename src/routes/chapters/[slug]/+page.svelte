@@ -6,6 +6,7 @@
 	import ImageViewer from '#lib/components/ImageViewer.svelte';
 	import PhoneBar from '#lib/components/PhoneBar.svelte';
 	import PolaroidWall from '#lib/components/PolaroidWall.svelte';
+	import ViewCursor from '#lib/components/ViewCursor.svelte';
 	import { NAME, STATEMENT } from '#lib/copy.js';
 	import { frames, leadFirst, pad } from '#lib/site.js';
 	import type { PageProps } from './$types';
@@ -49,6 +50,8 @@
 {/if}
 
 <PhoneBar meta={frames(c)} label="Next · {data.next.title} →" href={resolve('/chapters/[slug]', { slug: data.next.slug })} />
+
+<ViewCursor />
 
 {#if viewing}
 	<ImageViewer {items} index={viewing.index} origin={viewing.origin} onindex={(i) => viewing && (viewing.index = i)} onclose={close} />
