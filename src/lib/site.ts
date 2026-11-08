@@ -1,14 +1,14 @@
 import { ABOUT, NAME, NOTES, SERVICES } from './copy';
 
 export type Photo = { id: string; src: string; small: string; width: number; height: number; tone: string; alt: string; gray: boolean };
-export type Chapter = { slug: string; n: string; title: string; note: string; layout: 'framed' | 'strip' | 'polaroid'; cover: string | null; photos: Photo[] };
+export type Chapter = { slug: string; n: string; title: string; note: string; layout: 'spread' | 'strip' | 'polaroid'; cover: string | null; photos: Photo[] };
 export type Site = {
 	chapters: Chapter[];
 	services: { label: string; text: string; photos: Photo[] }[];
 	about: { portrait: Photo; pinned: Photo; text: string; facts: string[] };
 };
 
-// O-05 drew three chapter pages from his own: Cinematic as a film strip, Wedding as polaroids; the rest share his frame.
+// O-05 drew Cinematic as a film strip and Wedding as polaroids; the rest are spreads (O-19: the name and frame index beside the photos).
 const LAYOUT: Record<string, Chapter['layout']> = { cinematic: 'strip', wedding: 'polaroid' };
 
 type ChapterRow = { id: string; slug: string; title: string; look: string; cover_media_id: string | null };
@@ -46,7 +46,7 @@ export async function loadSite(fetch: typeof globalThis.fetch): Promise<Site> {
 			n: String(i + 1).padStart(2, '0'),
 			title: c.title,
 			note: NOTES[c.slug] ?? '',
-			layout: LAYOUT[c.slug] ?? 'framed',
+			layout: LAYOUT[c.slug] ?? 'spread',
 			cover: c.cover_media_id,
 			photos: mediaRows.filter((m) => m.chapter_id === c.id).map((m) => photo(m, c.look === 'silver'))
 		})
@@ -62,6 +62,12 @@ export async function loadSite(fetch: typeof globalThis.fetch): Promise<Site> {
 		}
 	};
 }
+
+// A spread opens on a landscape across both columns (O-19): the first one moves to the front; the rest keep his order.
+export const leadFirst = (photos: Photo[]) => {
+	const i = photos.findIndex((p) => p.width > p.height);
+	return i <= 0 ? photos : [photos[i], ...photos.slice(0, i), ...photos.slice(i + 1)];
+};
 
 export const coverOf = (c: Chapter) => c.photos.find((p) => p.id === c.cover) ?? c.photos[0];
 export const frames = (c: Chapter) => `${String(c.photos.length).padStart(2, '0')} frames${c.note ? ` · ${c.note}` : ''}`;
