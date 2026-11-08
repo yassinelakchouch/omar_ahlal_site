@@ -192,7 +192,6 @@
 		padding: 0;
 		border: 0;
 		background: none;
-		cursor: zoom-in;
 	}
 	.shot button :global(.photo),
 	.shot button :global(img) {

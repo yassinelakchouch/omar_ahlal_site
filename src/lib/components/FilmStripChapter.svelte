@@ -64,7 +64,6 @@
 		padding: 0;
 		border: 0;
 		background: none;
-		cursor: zoom-in;
 	}
 	.hero :global(img) {
 		filter: grayscale(1);
@@ -97,7 +96,6 @@
 		padding: 0;
 		border: 0;
 		background: none;
-		cursor: zoom-in;
 	}
 	.code {
 		position: absolute;
