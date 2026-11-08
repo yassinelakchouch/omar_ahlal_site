@@ -1,5 +1,4 @@
 <script lang="ts">
-	import type { Snippet } from 'svelte';
 	import Arrow from './Arrow.svelte';
 	import Roll from './Roll.svelte';
 	import { finePointer } from '#lib/motion.js';
@@ -13,14 +12,13 @@
 		/** Rolled by the parent (the chapter index points one row at a time); otherwise the row rolls on its own hover. */
 		on?: boolean;
 		external?: boolean;
-		size?: 'chapter' | 'channel';
+		size?: 'channel' | 'hero';
 		tone?: 'paper' | 'ink';
 		onpointerenter?: (e: RowEvent) => void;
 		onfocus?: (e: RowEvent) => void;
 		onblur?: (e: RowEvent) => void;
-		thumb?: Snippet;
 	};
-	let { n, title, note, href, on, external = false, size = 'chapter', tone = 'paper', onpointerenter, onfocus, onblur, thumb }: Props = $props();
+	let { n, title, note, href, on, external = false, size = 'channel', tone = 'paper', onpointerenter, onfocus, onblur }: Props = $props();
 	let hover = $state(false);
 	const rolled = $derived(on ?? hover);
 </script>
@@ -49,8 +47,7 @@
 >
 	<span class="n">{n}</span>
 	<span class="title"><Roll text={title} on={rolled} /></span>
-	<span class="note">{note}{#if external}&nbsp;<Arrow glyph="↗" />{/if}</span>
-	{#if thumb}<span class="thumb" aria-hidden="true">{@render thumb()}</span>{/if}
+	<span class="note">{note}{#if external}&nbsp;<Arrow glyph="↗" />{/if}{#if size === 'hero'}<span class="go" aria-hidden="true">→</span>{/if}</span>
 </a>
 
 <style>
@@ -100,6 +97,38 @@
 	.row.on .note {
 		color: var(--lit);
 	}
+	/* O-18 A: the hero's index beside the strip. Quiet until its chapter is open, then ink with → travelled in. */
+	.row[data-size='hero'] {
+		grid-template-columns: 36px minmax(0, 1fr) 84px;
+		min-height: 34px;
+		padding: 0;
+		border-top: 0;
+		color: var(--quiet);
+	}
+	.row[data-size='hero'] .n {
+		font-size: 12px;
+	}
+	.row[data-size='hero'] .title {
+		font-size: 20px;
+		line-height: 1.35;
+	}
+	.row[data-size='hero'].on,
+	.row[data-size='hero'].on .note {
+		color: var(--fg);
+	}
+	.go {
+		display: inline-block;
+		margin-left: 6px;
+		opacity: 0;
+		translate: -14px 0;
+		transition:
+			opacity 0.33s cubic-bezier(0.22, 1, 0.36, 1),
+			translate 0.33s cubic-bezier(0.22, 1, 0.36, 1);
+	}
+	.row.on .go {
+		opacity: 1;
+		translate: 0 0;
+	}
 	.row:focus-visible {
 		outline: 2px solid var(--ember);
 		outline-offset: 4px;
@@ -107,10 +136,7 @@
 	.row[data-tone='ink']:focus-visible {
 		outline-color: var(--paper);
 	}
-	.thumb {
-		display: none;
-	}
-	/* Phone: no hover, so a chapter row carries a small photo, and a channel row shows its number or handle under the name. */
+	/* Phone: a channel row shows its number or handle under the name. */
 	@media (max-width: 760px) {
 		.row {
 			grid-template-columns: 30px 1fr auto;
@@ -139,10 +165,16 @@
 			grid-column: 2;
 			margin-top: 4px;
 		}
-		.thumb {
-			display: block;
-			width: 44px;
-			height: 54px;
+		.row[data-size='hero'] {
+			grid-template-columns: 30px minmax(0, 1fr) auto;
+			min-height: 44px;
+		}
+		.row[data-size='hero'] .title {
+			font-size: 19px;
+			line-height: 1.35;
+		}
+		.row[data-size='hero'] .note {
+			display: inline;
 		}
 	}
 </style>
