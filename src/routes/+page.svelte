@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { resolve } from '$app/paths';
-	import ChapterIndex from '#lib/components/ChapterIndex.svelte';
 	import ChapterStrip from '#lib/components/ChapterStrip.svelte';
 	import IndexRow from '#lib/components/IndexRow.svelte';
 	import PhoneBar from '#lib/components/PhoneBar.svelte';
@@ -42,7 +41,8 @@
 	<title>{NAME} · photographer & videographer in Morocco</title>
 </svelte:head>
 
-<section class="hero" aria-label="{NAME}">
+<!-- id="chapters": the menu's Work lands here, where the chapter index now lives (the list below it is gone, O-18). -->
+<section id="chapters" class="hero" aria-label="{NAME}">
 	<div class="side">
 		<div class="name"><Wordmark /></div>
 		<p class="statement">{STATEMENT}</p>
@@ -65,10 +65,6 @@
 		</ol>
 	</div>
 	<div class="strip"><ChapterStrip {chapters} {open} onopen={(i) => (open = i)} /></div>
-</section>
-
-<section id="chapters" class="chapters" aria-label="Chapters">
-	<ChapterIndex />
 </section>
 
 <PhoneBar meta="({total}) Chapters" label="Book a shoot ↗" href={resolve('/contact')} />
@@ -107,10 +103,6 @@
 		min-width: 0;
 		min-height: 0;
 	}
-	.chapters {
-		padding: 40px 48px 96px;
-		scroll-margin-top: 16px;
-	}
 	@media (max-width: 760px) {
 		.hero {
 			height: auto;
@@ -139,8 +131,8 @@
 			order: 4;
 			margin: 8px 0 0;
 		}
-		.chapters {
-			padding: 32px 16px 150px;
+		.hero {
+			padding-bottom: 150px;
 		}
 	}
 </style>
