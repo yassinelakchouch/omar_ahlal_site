@@ -124,7 +124,6 @@
 		border: 0;
 		background: var(--mat);
 		box-shadow: 0 14px 28px rgba(17, 17, 17, 0.18);
-		cursor: zoom-in;
 	}
 	.pic {
 		display: block;
