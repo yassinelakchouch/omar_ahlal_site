@@ -1,5 +1,4 @@
 <script lang="ts">
-	import type { Snippet } from 'svelte';
 	import Arrow from './Arrow.svelte';
 	import Roll from './Roll.svelte';
 	import { finePointer } from '#lib/motion.js';
@@ -13,14 +12,13 @@
 		/** Rolled by the parent (the chapter index points one row at a time); otherwise the row rolls on its own hover. */
 		on?: boolean;
 		external?: boolean;
-		size?: 'chapter' | 'channel' | 'hero';
+		size?: 'channel' | 'hero';
 		tone?: 'paper' | 'ink';
 		onpointerenter?: (e: RowEvent) => void;
 		onfocus?: (e: RowEvent) => void;
 		onblur?: (e: RowEvent) => void;
-		thumb?: Snippet;
 	};
-	let { n, title, note, href, on, external = false, size = 'chapter', tone = 'paper', onpointerenter, onfocus, onblur, thumb }: Props = $props();
+	let { n, title, note, href, on, external = false, size = 'channel', tone = 'paper', onpointerenter, onfocus, onblur }: Props = $props();
 	let hover = $state(false);
 	const rolled = $derived(on ?? hover);
 </script>
@@ -50,7 +48,6 @@
 	<span class="n">{n}</span>
 	<span class="title"><Roll text={title} on={rolled} /></span>
 	<span class="note">{note}{#if external}&nbsp;<Arrow glyph="↗" />{/if}{#if size === 'hero'}<span class="go" aria-hidden="true">→</span>{/if}</span>
-	{#if thumb}<span class="thumb" aria-hidden="true">{@render thumb()}</span>{/if}
 </a>
 
 <style>
@@ -139,10 +136,7 @@
 	.row[data-tone='ink']:focus-visible {
 		outline-color: var(--paper);
 	}
-	.thumb {
-		display: none;
-	}
-	/* Phone: no hover, so a chapter row carries a small photo, and a channel row shows its number or handle under the name. */
+	/* Phone: a channel row shows its number or handle under the name. */
 	@media (max-width: 760px) {
 		.row {
 			grid-template-columns: 30px 1fr auto;
@@ -170,11 +164,6 @@
 			display: block;
 			grid-column: 2;
 			margin-top: 4px;
-		}
-		.thumb {
-			display: block;
-			width: 44px;
-			height: 54px;
 		}
 		.row[data-size='hero'] {
 			grid-template-columns: 30px minmax(0, 1fr) auto;
